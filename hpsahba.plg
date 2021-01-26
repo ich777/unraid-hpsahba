@@ -107,7 +107,7 @@ install() {
 #Install hpsahba Patch
 /sbin/installpkg "&plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz"
 depmod -a
-modprobe hpsa hpsa_use_nvram_hba_flag=1 
+modprobe /lib/modules/$(uname -r)/kernel/drivers/scsi/hpsa.ko hpsa_use_nvram_hba_flag=1
 }
 
 patch() {
