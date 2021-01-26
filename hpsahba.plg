@@ -116,7 +116,7 @@ modprobe -r hpsa
 rm -rf /lib/modules/$(uname -r)/kernel/drivers/scsi/hpsa.ko.xz
 }
 
-#Check if hpsahba Patch is allready downloaded & installed
+#Check if hpsahba Patch is allready downloaded and installed
 check
 if [ ! -z "$(modinfo hpsa | grep "enable HBA mode")" ]; then
     echo
