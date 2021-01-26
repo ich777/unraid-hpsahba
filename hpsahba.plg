@@ -20,7 +20,7 @@
 
 <FILE Name="&emhttp;/README.md">
 <INLINE>
-**hpsahba Patch**
+**hpsahba**
 
 This Plugin enables/disables HBA mode on some HP Smart Array controllers and installs the tool 'hpsahba'.
 For further information go to the source Github repository: https://github.com/im-0/hpsahba.
@@ -116,7 +116,7 @@ modprobe -r hpsa
 rm -rf /lib/modules/$(uname -r)/kernel/drivers/scsi/hpsa.ko.xz
 }
 
-#Check if hpsahba Patch is allready downloaded
+#Check if hpsahba Patch is allready downloaded & installed
 check
 if [ ! -z "$(modinfo hpsa | grep "enable HBA mode")" ]; then
     echo
@@ -143,8 +143,7 @@ echo "---------------------------------------"
 echo "------Uninstalling hpsahba Patch-------"
 echo "---------------------------------------"
 # Remove plugin related files
-removepkg &name;-&version;
-rm -rf /usr/local/emhttp/plugins/&name;
+rm -rf &emhttp;
 rm -rf &plugin;
 echo
 echo "----------------------------------------------------------------------------"
