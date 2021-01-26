@@ -143,8 +143,8 @@ echo "---------------------------------------"
 echo "------Uninstalling hpsahba Patch-------"
 echo "---------------------------------------"
 # Remove plugin related files
-rm -rf &emhttp;
 rm -rf &plugin;
+rm -rf &emhttp;
 echo
 echo "----------------------------------------------------------------------------"
 echo "----------hpsahba Patch uninstalled, please reboot your server!-------------"
