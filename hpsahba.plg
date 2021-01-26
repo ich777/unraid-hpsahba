@@ -1,0 +1,157 @@
+<?xml version='1.0' standalone='yes'?>
+<!DOCTYPE PLUGIN [
+  <!ENTITY name      "hpsahba">
+  <!ENTITY author    "ich777">
+  <!ENTITY version   "2021.01.26">
+  <!ENTITY gitURL    "https://github.com/&author;/unraid-&name;/raw/master">
+  <!ENTITY pluginURL "&gitURL;/&name;.plg">
+  <!ENTITY plugin    "/boot/config/plugins/&name;">
+  <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
+]>
+
+<PLUGIN  name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="6.9.0-RC2" icon="fa-hdd-o">
+
+<CHANGES>
+
+###2020.10.27
+- Initial release
+
+</CHANGES>
+
+<FILE Name="&emhttp;/README.md">
+<INLINE>
+**hpsahba Patch**
+
+This Plugin enables/disables HBA mode on some HP Smart Array controllers and installs the tool 'hpsahba'.
+For further information go to the source Github repository: https://github.com/im-0/hpsahba.
+
+Tested on following hardware so far:
+HP Smart Array P410i
+HP Smart Array P812
+Hewlett-Packard Company Smart Array G6 controllers / P410 (PCI ID: 103c:323a, board ID: 0x3243103c, firmware: 6.64)
+Hewlett-Packard Company Smart Array G6 controllers / P212 (PCI ID: 103c:323a, board ID: 0x3241103c, firmware: 6.64)
+
+</INLINE>
+</FILE>
+
+<FILE Run="/bin/bash">
+<INLINE>
+
+KERNEL_V="$(uname -r)"
+PACKAGE="hpsahba"
+DL_URL="https://github.com/ich777/unraid-plugins-repo/releases/download/$KERNEL_V"
+
+if [ ! -d "&plugin;/packages/${KERNEL_V%%-*}" ]; then
+  mkdir -p "&plugin;/packages/${KERNEL_V%%-*}"
+fi
+
+#Check for old packages
+rm -rf $(ls -d &plugin;/packages/* | grep -v "${KERNEL_V%%-*}")
+
+download() {
+#Download hpsahba Patch
+if wget -q -nc --show-progress --progress=bar:force:noscroll -O "&plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz" "${DL_URL}/${PACKAGE}-1.txz" ; then
+  if [ "$(md5sum "&plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz" | cut -d ' ' -f1)" != "$(wget -qO- "${DL_URL}/${PACKAGE}-1.txz.md5" | cut -d ' ' -f1)" ]; then
+    if [ -d &plugin; ]; then
+      rm -rf &plugin;
+    fi
+    echo
+    echo "-----ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR------"
+    echo "--------------------------------CHECKSUM ERROR!---------------------------------"
+    rm -rf &plugin;
+    rm -rf &emhttp;
+    exit 1
+  fi
+  echo
+  echo "-------------Sucessfully downloaded hpsahba Patch, please wait...!--------------"
+else
+  echo
+  echo "-----ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR------"
+  echo "------------------------Can't download hpsahba Patch----------------------------"
+  rm -rf &plugin;
+  rm -rf &emhttp;
+  exit 1
+fi
+}
+
+check() {
+if [ ! -f "&plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz" ]; then
+  echo
+  echo "+=============================================================================="
+  echo "| WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING"
+  echo "|"
+  echo "| Don't close this window with the red 'X' in the top right corner until the 'DONE' button is displayed!"
+  echo "|"
+  echo "| WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING"
+  echo "+=============================================================================="
+  echo
+  echo "-----------------Downloading hpsahba Patch, please wait...!--------------------"
+  echo "-----------This could take some time, please don't close this window!----------"
+  download
+elif [ ! -s "&plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz" ]; then
+  rm -rf &plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz
+  echo
+  echo "-----ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR-----"
+  echo "-----Download is empty please contact the developer of this plugin if the------"
+  echo "-------plugin has been already built against the current Kernel version--------"
+  rm -rf &plugin;
+  rm -rf &emhttp;
+  exit 1
+else
+  echo
+  echo "-------------------------hpsahba Patch found locally!--------------------------"
+fi
+}
+
+install() {
+#Install hpsahba Patch
+/sbin/installpkg "&plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz"
+depmod -a
+modprobe hpsa hpsa_use_nvram_hba_flag=1 
+}
+
+patch() {
+#Patching files
+modprobe -r hpsa
+rm -rf /lib/modules/$(uname -r)/kernel/drivers/scsi/hpsa.ko.xz
+}
+
+#Check if hpsahba Patch is allready downloaded
+check
+if [ ! -z "$(modinfo hpsa | grep "enable HBA mode")" ]; then
+    echo
+    echo "----------------------hpsahba Patch already installed...!----------------------"
+    echo
+else
+    echo
+    echo "-------------------Installing hpsahba Patch, please wait...!-------------------"
+    patch
+    install > /dev/null
+    echo
+    echo "------------------Installation of hpsahba Patch successfull--------------------"
+    echo
+fi
+
+
+</INLINE>
+</FILE>
+
+<FILE Run="/bin/bash" Method="remove">
+<INLINE>
+
+echo "---------------------------------------"
+echo "------Uninstalling hpsahba Patch-------"
+echo "---------------------------------------"
+# Remove plugin related files
+removepkg &name;-&version;
+rm -rf /usr/local/emhttp/plugins/&name;
+rm -rf &plugin;
+echo
+echo "----------------------------------------------------------------------------"
+echo "----------hpsahba Patch uninstalled, please reboot your server!-------------"
+echo "----------------------------------------------------------------------------"
+echo
+
+</INLINE>
+</FILE>
+</PLUGIN>
