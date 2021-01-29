@@ -26,11 +26,11 @@
 **hpsahba**
 
 This Plugin enables/disables HBA mode on some HP Smart Array controllers and installs the tool 'hpsahba'.  
+As mentioned on the Github Repo: CAUTION: This tool will destroy your data and may damage your hardware!  
 For further information go to the source Github repository: https://github.com/im-0/hpsahba.  
   
 Warning, this "workaround" comes with a few downsides:  
-- Temps are correct if you change the controller type to SAT.  
-- SMART reading does work (set controller type to SAT to get temperatur readings).  
+- You have to set the controller type to SAT to get temperature readings.  
 - TRIM might now work (needs further testing).  
   
 Tested on following hardware so far:  
