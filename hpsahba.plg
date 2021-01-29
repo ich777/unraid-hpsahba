@@ -28,10 +28,10 @@
 This Plugin enables/disables HBA mode on some HP Smart Array controllers and installs the tool 'hpsahba'.  
 For further information go to the source Github repository: https://github.com/im-0/hpsahba.  
   
-Warning, this workaround comes with a few downsides:   
-- Temps are correct if you change controller type to SAT, however it might not be listed by unRaid in dashboard (bug in unRaid).  
-- SMART reading does work, however it seems that unRaid takes other attributes for temp (point above)  
-- TRIM commands might now work.  
+Warning, this "workaround" comes with a few downsides:  
+- Temps are correct if you change the controller type to SAT.  
+- SMART reading does work (set controller type to SAT to get temperatur readings).  
+- TRIM might now work (needs further testing).  
   
 Tested on following hardware so far:  
 HP Smart Array P410i  
