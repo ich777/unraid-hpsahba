@@ -26,7 +26,7 @@
 **hpsahba**
 
 This Plugin enables/disables HBA mode on some HP Smart Array controllers and installs the tool 'hpsahba'.  
-As mentioned on the Github Repo: _CAUTION: This tool will destroy your data and may damage your hardware!_  
+As mentioned in the Github Repo: _CAUTION: This tool will destroy your data and may damage your hardware!_  
 For further information go to the source Github repository: https://github.com/im-0/hpsahba.  
   
 Warning, this "workaround" comes with a few downsides:  
