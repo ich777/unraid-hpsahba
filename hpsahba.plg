@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "hpsahba">
   <!ENTITY author    "ich777">
-  <!ENTITY version   "2021.01.26">
+  <!ENTITY version   "2021.01.29">
   <!ENTITY gitURL    "https://github.com/&author;/unraid-&name;/raw/master">
   <!ENTITY pluginURL "&gitURL;/&name;.plg">
   <!ENTITY plugin    "/boot/config/plugins/&name;">
@@ -13,8 +13,11 @@
 
 <CHANGES>
 
-###2021.01.26
+###2021.01.29
 - Initial release
+
+###2021.01.26
+- Initial prerelease for testing
 
 </CHANGES>
 
@@ -22,14 +25,19 @@
 <INLINE>
 **hpsahba**
 
-This Plugin enables/disables HBA mode on some HP Smart Array controllers and installs the tool 'hpsahba'.
-For further information go to the source Github repository: https://github.com/im-0/hpsahba.
-
-Tested on following hardware so far:
-HP Smart Array P410i
-HP Smart Array P812
-Hewlett-Packard Company Smart Array G6 controllers / P410 (PCI ID: 103c:323a, board ID: 0x3243103c, firmware: 6.64)
-Hewlett-Packard Company Smart Array G6 controllers / P212 (PCI ID: 103c:323a, board ID: 0x3241103c, firmware: 6.64)
+This Plugin enables/disables HBA mode on some HP Smart Array controllers and installs the tool 'hpsahba'.  
+For further information go to the source Github repository: https://github.com/im-0/hpsahba.  
+  
+Warning, this workaround comes with a few downsides:   
+- Temps are correct if you change controller type to SAT, however it might not be listed by unRaid in dashboard (bug in unRaid).  
+- SMART reading does work, however it seems that unRaid takes other attributes for temp (point above)  
+- TRIM commands might now work.  
+  
+Tested on following hardware so far:  
+HP Smart Array P410i  
+HP Smart Array P812  
+Hewlett-Packard Company Smart Array G6 controllers / P410 (PCI ID: 103c:323a, board ID: 0x3243103c, firmware: 6.64)  
+Hewlett-Packard Company Smart Array G6 controllers / P212 (PCI ID: 103c:323a, board ID: 0x3241103c, firmware: 6.64)  
 
 </INLINE>
 </FILE>
