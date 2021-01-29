@@ -9,7 +9,7 @@
   <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
 ]>
 
-<PLUGIN  name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="6.9.0-RC2" icon="fa-hdd-o">
+<PLUGIN  name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="6.9.0-RC2" icon="hdd-o">
 
 <CHANGES>
 
