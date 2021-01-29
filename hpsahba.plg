@@ -35,6 +35,7 @@ Warning, this "workaround" comes with a few downsides:
   
 Tested on following hardware so far:  
 HP Smart Array P410i  
+HP Smart Array P420i Firmware Version 6.0  
 HP Smart Array P812  
 Hewlett-Packard Company Smart Array G6 controllers / P410 (PCI ID: 103c:323a, board ID: 0x3243103c, firmware: 6.64)  
 Hewlett-Packard Company Smart Array G6 controllers / P212 (PCI ID: 103c:323a, board ID: 0x3241103c, firmware: 6.64)  
