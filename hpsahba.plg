@@ -72,11 +72,11 @@ if wget -q -nc --show-progress --progress=bar:force:noscroll -O "&plugin;/packag
     exit 1
   fi
   echo
-  echo "-------------Sucessfully downloaded hpsahba Patch, please wait...!--------------"
+  echo "-------------Successfully downloaded hpsahba Patch, please wait...!------------"
 else
   echo
-  echo "-----ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR------"
-  echo "------------------------Can't download hpsahba Patch----------------------------"
+  echo "-----ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR-----"
+  echo "------------------------Can't download hpsahba Patch---------------------------"
   rm -rf &plugin;
   rm -rf &emhttp;
   exit 1
@@ -138,7 +138,7 @@ else
     patch
     install > /dev/null
     echo
-    echo "------------------Installation of hpsahba Patch successfull--------------------"
+    echo "------------------Installation of hpsahba Patch successful---------------------"
     echo
 fi
 
