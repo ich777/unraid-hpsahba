@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "hpsahba">
   <!ENTITY author    "ich777">
-  <!ENTITY version   "2021.03.24">
+  <!ENTITY version   "2021.03.25">
   <!ENTITY gitURL    "https://github.com/&author;/unraid-&name;/raw/master">
   <!ENTITY pluginURL "&gitURL;/&name;.plg">
   <!ENTITY plugin    "/boot/config/plugins/&name;">
@@ -12,6 +12,9 @@
 <PLUGIN  name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="6.9.0-RC2" icon="hdd-o">
 
 <CHANGES>
+
+###2021.03.25
+- Added wait for network to become online and timeout
 
 ###2021.03.24
 - Corrected typos
@@ -52,6 +55,12 @@ Hewlett-Packard Company Smart Array G6 controllers / P212 (PCI ID: 103c:323a, bo
 KERNEL_V="$(uname -r)"
 PACKAGE="hpsahba"
 DL_URL="https://github.com/ich777/unraid-plugins-repo/releases/download/$KERNEL_V"
+
+#Wait for Network and timeout after 30 seconds
+HOST="8.8.8.8"
+for i in {1..10}; do
+  ping -c1 $HOST &amp;> /dev/null &amp;&amp; break;
+done
 
 if [ ! -d "&plugin;/packages/${KERNEL_V%%-*}" ]; then
   mkdir -p "&plugin;/packages/${KERNEL_V%%-*}"
