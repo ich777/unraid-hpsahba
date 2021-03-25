@@ -14,7 +14,7 @@
 <CHANGES>
 
 ###2021.03.25
-- Added wait for network to become online and timeout
+- Added wait for network and timout
 
 ###2021.03.24
 - Corrected typos
