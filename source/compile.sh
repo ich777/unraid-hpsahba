@@ -11,11 +11,17 @@ cp ${DATA_DIR}/HP_P410i_Patch/hpsahba/hpsahba /HP_P410i/usr/bin
 cd ${DATA_DIR}/linux-$UNAME
 rm -rf ${DATA_DIR}/linux-$UNAME/*.patch
 
-# Copy patches from HPSAHBA and compile module
-rsync -av ${DATA_DIR}/HP_P410i_Patch/hpsahba/kernel/5.3-patchset-v2 ${DATA_DIR}/linux-$UNAME
-find ${DATA_DIR}/linux-$UNAME -type f -iname '*.patch' -print0|xargs -n1 -0 patch -p 1 -i
-make modules -j${CPU_COUNT}
-cp ${DATA_DIR}/linux-$UNAME/drivers/scsi/hpsa.ko /HP_P410i/lib/modules/${UNAME}/kernel/drivers/scsi/
+# Copy patches from HPSAHBA, depending on Kernel version and compile module
+TARGET_V="5.17.99"
+COMPARE="${UNAME//-*/}
+$TARGET_V"
+if [ "$TARGET_V" != "$(echo "$COMPARE" | sort -V | tail -1)" ]; then
+  rsync -av ${DATA_DIR}/HP_P410i_Patch/hpsahba/kernel/5.18-patchset-v2/ ${DATA_DIR}/linux-$UNAME
+  find ${DATA_DIR}/linux-$UNAME -type f -iname '*.patch' -print0|xargs -n1 -0 patch -p 1 -i
+else
+  rsync -av ${DATA_DIR}/HP_P410i_Patch/hpsahba/kernel/5.13-patchset-v2/ ${DATA_DIR}/linux-$UNAME
+  find ${DATA_DIR}/linux-$UNAME -type f -iname '*.patch' -print0|xargs -n1 -0 patch -p 1 -i
+fi
 
 #Compress modules
 xz --check=crc32 --lzma2 /HP_P410i/lib/modules/${UNAME}/kernel/drivers/scsi/hpsa.ko
