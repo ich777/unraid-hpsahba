@@ -2,16 +2,20 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "hpsahba">
   <!ENTITY author    "ich777">
-  <!ENTITY version   "2022.04.11">
+  <!ENTITY version   "2022.07.19">
   <!ENTITY gitURL    "https://github.com/&author;/unraid-&name;/raw/master">
   <!ENTITY pluginURL "&gitURL;/&name;.plg">
   <!ENTITY plugin    "/boot/config/plugins/&name;">
   <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
+  <!ENTITY packages  "/boot/config/plugins/&name;/packages">
 ]>
 
 <PLUGIN  name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="6.9.0-RC2" icon="hdd-o">
 
 <CHANGES>
+
+###2022.07.19
+- Necessary changes for unRAID 6.11+
 
 ###2022.04.11
 - Added Plugin Update Helper when up-/downgrading unRAID version
@@ -58,35 +62,17 @@ Hewlett-Packard Company Smart Array G6 controllers / P212 (PCI ID: 103c:323a, bo
 <FILE Run="/bin/bash">
 <INLINE>
 
-KERNEL_V="$(uname -r)"
-PACKAGE="hpsahba-plugin-${KERNEL_V}"
-DL_URL="https://github.com/ich777/unraid-hpsahba/releases/download/$KERNEL_V"
-
-#Wait for Network and timeout after 30 seconds
-HOST="8.8.8.8"
-for i in {1..10}; do
-  ping -c1 $HOST &amp;> /dev/null &amp;&amp; break;
-done
-
-if [ ! -d "&plugin;/packages/${KERNEL_V%%-*}" ]; then
-  mkdir -p "&plugin;/packages/${KERNEL_V%%-*}"
-fi
-
-#Check for old packages
-rm -rf $(ls -d &plugin;/packages/* | grep -v "${KERNEL_V%%-*}")
-
 download() {
-#Download hpsahba Patch
-if wget -q -nc --show-progress --progress=bar:force:noscroll -O "&plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz" "${DL_URL}/${PACKAGE}-1.txz" ; then
-  if [ "$(md5sum "&plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz" | cut -d ' ' -f1)" != "$(wget -qO- "${DL_URL}/${PACKAGE}-1.txz.md5" | cut -d ' ' -f1)" ]; then
+# Download hpsahba Patch
+if wget -q -nc --show-progress --progress=bar:force:noscroll -O "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz" "${DL_URL}/${PACKAGE}-1.txz" ; then
+  if [ "$(md5sum "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz" | cut -d ' ' -f1)" != "$(wget -qO- "${DL_URL}/${PACKAGE}-1.txz.md5" | cut -d ' ' -f1)" ]; then
     if [ -d &plugin; ]; then
       rm -rf &plugin;
     fi
     echo
     echo "-----ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR------"
     echo "--------------------------------CHECKSUM ERROR!---------------------------------"
-    rm -rf &plugin;
-    rm -rf &emhttp;
+    rm -rf &plugin; &emhttp;
     exit 1
   fi
   echo
@@ -95,14 +81,13 @@ else
   echo
   echo "-----ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR-----"
   echo "------------------------Can't download hpsahba Patch---------------------------"
-  rm -rf &plugin;
-  rm -rf &emhttp;
+  rm -rf &plugin; &emhttp;
   exit 1
 fi
 }
 
 check() {
-if [ ! -f "&plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz" ]; then
+if [ ! -f "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz" ]; then
   echo
   echo "+=============================================================================="
   echo "| WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING"
@@ -115,14 +100,13 @@ if [ ! -f "&plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz" ]; then
   echo "-----------------Downloading hpsahba Patch, please wait...!--------------------"
   echo "-----------This could take some time, please don't close this window!----------"
   download
-elif [ ! -s "&plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz" ]; then
-  rm -rf &plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz
+elif [ ! -s "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz" ]; then
+  rm -rf &packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz
   echo
   echo "-----ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR-----"
   echo "-----Download is empty please contact the developer of this plugin if the------"
   echo "-------plugin has been already built against the current Kernel version--------"
-  rm -rf &plugin;
-  rm -rf &emhttp;
+  rm -rf &plugin; &emhttp;
   exit 1
 else
   echo
@@ -131,17 +115,55 @@ fi
 }
 
 install() {
-#Install hpsahba Patch
-/sbin/installpkg "&plugin;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz" &amp;&amp; \
-depmod -a &amp;&amp; \
-modprobe hpsa hpsa_use_nvram_hba_flag=1
+# Install hpsahba Patch
+/sbin/installpkg "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz"
+depmod -a
 }
 
 patch() {
-#Patching files
-modprobe -r hpsa &amp;&amp; \
+# Patching files
+/sbin/modprobe -r hpsa
 rm -rf /lib/modules/$(uname -r)/kernel/drivers/scsi/hpsa.ko.xz
 }
+
+activate() {
+# Modprobe hpsahba Patch
+if [ "$(cat /sys/module/hpsa/parameters/hpsa_use_nvram_hba_flag 2>/dev/null)" != "Y" ]; then
+  /sbin/modprobe -r hpsa
+  /sbin/modprobe hpsa hpsa_use_nvram_hba_flag=1
+fi
+
+}
+
+# Define Variables
+KERNEL_V="$(uname -r)"
+PACKAGE="hpsahba-plugin-${KERNEL_V}"
+DL_URL="https://github.com/ich777/unraid-hpsahba/releases/download/$KERNEL_V"
+
+if [ ! -d "&packages;/${KERNEL_V%%-*}" ]; then
+  mkdir -p "&packages;/${KERNEL_V%%-*}"
+fi
+
+# Check for old packages
+rm -rf $(ls -d &packages;/* | grep -v "${KERNEL_V%%-*}")
+
+# Check if hpsahba Patch is allready downloaded and installed
+check
+if [ ! -z "$(modinfo hpsa | grep "enable HBA mode")" ]; then
+    activate
+    echo
+    echo "------------------Installation of hpsahba Patch successful---------------------"
+    echo
+else
+    echo
+    echo "-------------------Installing hpsahba Patch, please wait...!-------------------"
+    patch
+    install > /dev/null
+    activate
+    echo
+    echo "------------------Installation of hpsahba Patch successful---------------------"
+    echo
+fi
 
 #Check if Plugin Update Helper is downloaded and up-to-date
 if [ ! -f &plugin;/plugin_update_helper ]; then
@@ -182,24 +204,6 @@ fi
 if [ -z "$(ps aux | grep -E "inotifywait -q /boot/changes.txt -e move_self,delete_self" | grep -v "grep -E inotifywait" | awk '{print $2}')" ]; then
   echo "/usr/bin/plugin_update_helper" | at now &gt; /dev/null 2&gt;&amp;1
 fi
-
-#Check if hpsahba Patch is allready downloaded and installed
-check
-if [ ! -z "$(modinfo hpsa | grep "enable HBA mode")" ]; then
-    modprobe hpsa hpsa_use_nvram_hba_flag=1
-    echo
-    echo "----------------------hpsahba Patch already installed...!----------------------"
-    echo
-else
-    echo
-    echo "-------------------Installing hpsahba Patch, please wait...!-------------------"
-    patch
-    install > /dev/null
-    echo
-    echo "------------------Installation of hpsahba Patch successful---------------------"
-    echo
-fi
-
 
 </INLINE>
 </FILE>
