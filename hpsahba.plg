@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "hpsahba">
   <!ENTITY author    "ich777">
-  <!ENTITY version   "2022.07.19">
+  <!ENTITY version   "2022.07.21">
   <!ENTITY gitURL    "https://github.com/&author;/unraid-&name;/raw/master">
   <!ENTITY pluginURL "&gitURL;/&name;.plg">
   <!ENTITY plugin    "/boot/config/plugins/&name;">
@@ -13,6 +13,10 @@
 <PLUGIN  name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="6.9.0-RC2" icon="hdd-o">
 
 <CHANGES>
+
+###2022.07.21
+- Version detection from package via GitHub API
+- Save md5 in packages directory
 
 ###2022.07.19
 - Necessary changes for unRAID 6.11+
@@ -64,8 +68,9 @@ Hewlett-Packard Company Smart Array G6 controllers / P212 (PCI ID: 103c:323a, bo
 
 download() {
 # Download hpsahba Patch
-if wget -q -nc --show-progress --progress=bar:force:noscroll -O "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz" "${DL_URL}/${PACKAGE}-1.txz" ; then
-  if [ "$(md5sum "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz" | cut -d ' ' -f1)" != "$(wget -qO- "${DL_URL}/${PACKAGE}-1.txz.md5" | cut -d ' ' -f1)" ]; then
+if wget -q -nc --show-progress --progress=bar:force:noscroll -O "&packages;/${KERNEL_V%%-*}/${LAT_PACKAGE}" "${DL_URL}/${LAT_PACKAGE}" ; then
+  wget -q -nc --show-progress --progress=bar:force:noscroll -O "&packages;/${KERNEL_V%%-*}/${LAT_PACKAGE}.md5" "${DL_URL}/${LAT_PACKAGE}.md5"
+  if [ "$(md5sum &packages;/${KERNEL_V%%-*}/${LAT_PACKAGE} | awk '{print $1}')" != "$(cat &packages;/${KERNEL_V%%-*}/${LAT_PACKAGE}.md5 | awk '{print $1}')" ]; then
     echo
     echo "-----ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR------"
     echo "--------------------------------CHECKSUM ERROR!---------------------------------"
@@ -84,27 +89,12 @@ fi
 }
 
 check() {
-if [ ! -f "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz" ]; then
-  echo
-  echo "+=============================================================================="
-  echo "| WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING"
-  echo "|"
-  echo "| Don't close this window with the red 'X' in the top right corner until the 'DONE' button is displayed!"
-  echo "|"
-  echo "| WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING"
-  echo "+=============================================================================="
+if ! ls -1 &packages;/${KERNEL_V%%-*}/ | grep -q "${PACKAGE}" ; then
+  LAT_PACKAGE="$(wget -qO- https://api.github.com/repos/ich777/unraid-hpsahba/releases/tags/${KERNEL_V} | jq -r '.assets[].name' | grep "${PACKAGE}" | grep -E -v '\.md5$' | sort -V | tail -1)"
   echo
   echo "-----------------Downloading hpsahba Patch, please wait...!--------------------"
   echo "-----------This could take some time, please don't close this window!----------"
   download
-elif [ ! -s "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz" ]; then
-  rm -rf &packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz
-  echo
-  echo "-----ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR-----"
-  echo "-----Download is empty please contact the developer of this plugin if the------"
-  echo "-------plugin has been already built against the current Kernel version--------"
-  rm -rf &plugin; &emhttp;
-  exit 1
 else
   echo
   echo "-------------------------hpsahba Patch found locally!--------------------------"
@@ -113,7 +103,7 @@ fi
 
 install() {
 # Install hpsahba Patch
-/sbin/installpkg "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz"
+/sbin/installpkg "&packages;/${KERNEL_V%%-*}/${PACKAGE}*.txz"
 depmod -a
 }
 
@@ -134,7 +124,7 @@ fi
 
 # Define Variables
 KERNEL_V="$(uname -r)"
-PACKAGE="hpsahba-plugin-${KERNEL_V}"
+PACKAGE="hpsahba"
 DL_URL="https://github.com/ich777/unraid-hpsahba/releases/download/$KERNEL_V"
 
 if [ ! -d "&packages;/${KERNEL_V%%-*}" ]; then
